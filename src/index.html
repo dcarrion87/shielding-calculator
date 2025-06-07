@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Multi-Source Radiation Shielding Calculator</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <div class="validation-banner">
+        <div class="validation-content">
+            <span class="validation-icon">⚠️</span>
+            <span class="validation-text">
+                <strong>VALIDATION PENDING:</strong> This calculator is undergoing clinical validation. Results should NOT be used for clinical decisions without independent verification by qualified professionals.
+            </span>
+            <a href="#validation-info" class="validation-link">Learn more</a>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>Multi-Source Radiation Shielding Calculator</h1>
+            <p class="header-subtitle">For Educational and Planning Purposes Only</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="control-panel">
+                <div class="control-group">
+                    <h3>Upload Floor Plan</h3>
+                    <label for="file-input" class="file-label">Choose Floor Plan Image</label>
+                    <input type="file" id="file-input" accept="image/*">
+                    <div id="upload-status" class="status"></div>
+                </div>
+                
+                <div class="control-group">
+                    <h3>Mode Selection</h3>
+                    <div class="mode-buttons">
+                        <button class="mode-button active" onclick="setMode('calibrate', event)">Calibrate</button>
+                        <button class="mode-button" onclick="setMode('source', event)">Place Sources</button>
+                        <button class="mode-button" onclick="setMode('measure', event)">Measurement Points</button>
+                        <button class="mode-button" onclick="setMode('barrier', event)">Draw Barriers</button>
+                        <button class="mode-button" onclick="setMode('heatmap', event)">Heatmap</button>
+                        <button class="mode-button" onclick="toggleArcherParams()" style="background-color: #6b7280;">⚙️ Parameters</button>
+                    </div>
+                    <label>Calibration Distance (m):</label>
+                    <input type="number" id="calib-dist" value="1.0" step="0.1">
+                    <div id="scale-status" class="status"></div>
+                </div>
+                
+                <div class="control-group" id="source-controls" style="display: none;">
+                    <h3>Source Settings</h3>
+                    <label>Isotope:</label>
+                    <select id="source-isotope">
+                        <option value="Tc-99m">Tc-99m (140 keV)</option>
+                        <option value="I-131">I-131 (364 keV)</option>
+                        <option value="F-18">F-18 (511 keV)</option>
+                        <option value="I-123">I-123 (159 keV)</option>
+                        <option value="Ga-67">Ga-67 (184 keV)</option>
+                        <option value="In-111">In-111 (245 keV)</option>
+                    </select>
+                    <div id="dose-rate-info" style="font-size: 12px; color: #666; margin-top: 5px;"></div>
+                    
+                    <label>Activity (MBq):</label>
+                    <input type="number" id="source-activity" value="370" step="10">
+                    
+                    <div class="source-list" id="source-list">
+                        <strong>Sources:</strong><br>
+                    </div>
+                </div>
+                
+                <div class="control-group" id="measure-controls" style="display: none;">
+                    <h3>Measurement Points</h3>
+                    <div class="measure-info" style="font-size: 12px; color: #666; margin-bottom: 10px;">
+                        Click on the floor plan to add measurement points
+                    </div>
+                    <div class="measurement-list" id="measurement-list">
+                        <strong>Points:</strong><br>
+                    </div>
+                </div>
+                
+                <div class="control-group" id="barrier-controls" style="display: none;">
+                    <h3>Barrier Settings</h3>
+                    <label>Material:</label>
+                    <select id="barrier-material">
+                        <option value="lead">Lead</option>
+                        <option value="concrete">Concrete</option>
+                        <option value="steel">Steel</option>
+                        <option value="plasterboard">Plasterboard</option>
+                        <option value="glass">Glass</option>
+                        <option value="brick">Brick</option>
+                        <option value="wood">Wood</option>
+                    </select>
+                    
+                    <label>Thickness (mm):</label>
+                    <input type="number" id="barrier-thickness" value="100.0" step="5">
+                    
+                    <div class="barrier-list" id="barrier-list"></div>
+                </div>
+                
+                <div class="control-group" id="heatmap-controls" style="display: none;">
+                    <h3>Heatmap Settings</h3>
+                    <label>Resolution (pixels):</label>
+                    <input type="number" id="heatmap-resolution" value="20" min="10" max="50" step="5">
+                    
+                    <label>Max Scale (µGy/hr):</label>
+                    <input type="number" id="heatmap-max" value="1000" step="100">
+                    
+                    <button onclick="generateHeatmap()" class="primary">Generate Heatmap</button>
+                    <button onclick="clearHeatmap()" class="secondary">Clear Heatmap</button>
+                    
+                    <div class="heatmap-legend" id="heatmap-legend" style="margin-top: 10px;"></div>
+                </div>
+                
+                <div class="control-group">
+                    <h3>Calculation Settings</h3>
+                    <label>Target Dose Rate (µGy/hr):</label>
+                    <input type="number" id="target" value="20" step="1">
+                </div>
+                
+                <button onclick="calculate()">Calculate All Points</button>
+                <button class="secondary" onclick="clearAll()">Clear All</button>
+                <button class="secondary" onclick="clearSources()">Clear Sources</button>
+                
+                <div class="validation-notice">
+                    <strong>Note:</strong> All calculations require validation against calibrated instruments before clinical use.
+                </div>
+                
+                <div class="control-group">
+                    <h3>Ceiling/Floor Calculations</h3>
+                    <label>Floor-to-ceiling height (m):</label>
+                    <input type="number" id="ceiling-height" value="3.0" step="0.1" min="2.0" max="5.0">
+                    
+                    <label>Points above/below source:</label>
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <label style="flex: 1;">
+                            <input type="checkbox" id="calc-above" checked> Above
+                        </label>
+                        <label style="flex: 1;">
+                            <input type="checkbox" id="calc-below" checked> Below
+                        </label>
+                    </div>
+                    
+                    <button onclick="calculateCeilingFloor()" class="primary">Calculate Vertical Shielding</button>
+                    <div id="ceiling-floor-results" style="margin-top: 10px; font-size: 12px;"></div>
+                </div>
+                
+                <div class="control-group">
+                    <h3>Export Options</h3>
+                    <button onclick="exportCSV()" class="primary">Export Data (CSV)</button>
+                    <button onclick="exportPDF()" class="primary">Export Report</button>
+                    <div style="font-size: 12px; color: #666; margin-top: 5px;">
+                        CSV: All data in spreadsheet format<br>
+                        Report: Full report with layout (opens for printing)
+                    </div>
+                </div>
+            </div>
+            
+            <div class="canvas-container" id="canvas-container">
+                <button class="expand-button" onclick="toggleCanvasExpand()" title="Toggle fullscreen">
+                    <span id="canvas-expand-icon">□</span>
+                </button>
+                <div class="canvas-wrapper">
+                    <canvas id="canvas"></canvas>
+                    <div class="zoom-controls">
+                        <button class="zoom-button" onclick="zoomIn()" title="Zoom in">+</button>
+                        <button class="zoom-button" onclick="zoomOut()" title="Zoom out">−</button>
+                        <button class="zoom-button" onclick="zoomReset()" title="Reset zoom">⟲</button>
+                        <div class="pan-hint" title="Hold Shift/Ctrl/Cmd and drag to pan">✋</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="results-panel" id="results-panel">
+                <button class="expand-button" onclick="toggleResultsExpand()" title="Toggle expand">
+                    <span id="results-expand-icon">□</span>
+                </button>
+                <div class="control-group" style="height: 100%; display: flex; flex-direction: column;">
+                    <h3>Results <span class="results-disclaimer">(Unvalidated)</span></h3>
+                    <div id="results" style="flex: 1;">Click "Calculate All Points" to see results</div>
+                    <div class="debug-section">
+                        <div class="debug-header" onclick="toggleDebug()">
+                            <span>Debug Information</span>
+                            <span class="toggle-icon" id="debug-toggle">▶</span>
+                        </div>
+                        <div class="debug-content" id="debug-content"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Validation Information Modal -->
+    <div id="validation-info" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <button onclick="closeValidationInfo()" class="modal-close">×</button>
+            <h2>Validation Status</h2>
+            <div class="validation-details">
+                <h3>Current Status</h3>
+                <p>This radiation shielding calculator is currently undergoing comprehensive validation testing. The validation process includes:</p>
+                <ul>
+                    <li>Comparison with established radiation safety standards</li>
+                    <li>Verification against calibrated radiation detection instruments</li>
+                    <li>Review by qualified medical physicists</li>
+                    <li>Testing across multiple clinical scenarios</li>
+                </ul>
+                
+                <h3>Important Disclaimers</h3>
+                <div class="warning-box">
+                    <p><strong>DO NOT use this calculator for:</strong></p>
+                    <ul>
+                        <li>Clinical decision making</li>
+                        <li>Regulatory compliance calculations</li>
+                        <li>Final shielding design without verification</li>
+                    </ul>
+                </div>
+                
+                <h3>Recommended Use</h3>
+                <p>This calculator may be used for:</p>
+                <ul>
+                    <li>Educational purposes</li>
+                    <li>Preliminary planning and estimates</li>
+                    <li>Training scenarios</li>
+                </ul>
+                
+                <p class="validation-footer">
+                    Always consult with qualified radiation safety professionals and verify all calculations 
+                    with calibrated instruments before implementation.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Archer Parameters Modal -->
+    <div id="archer-params-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+        <div style="position: relative; margin: 50px auto; max-width: 800px; max-height: 80vh; background: white; padding: 20px; border-radius: 10px; overflow-y: auto;">
+            <button onclick="closeArcherParams()" style="position: absolute; top: 10px; right: 10px; font-size: 24px; background: none; border: none; cursor: pointer;">×</button>
+            
+            <h2>Archer Equation Parameters</h2>
+            
+            <div style="margin: 20px 0;">
+                <label style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="use-buildup" onchange="updateUseBuildup(this.checked)">
+                    <span>Use Buildup Factor</span>
+                </label>
+                <p style="font-size: 12px; color: #666; margin: 5px 0 0 30px;">
+                    Buildup factor accounts for scattered radiation: B(x) = A × exp(α × x)
+                </p>
+            </div>
+            
+            <h3>Buildup Parameters by Material</h3>
+            <div id="buildup-params-container" style="margin: 20px 0;">
+                <!-- Will be populated dynamically -->
+            </div>
+            
+            <div style="margin-top: 30px; display: flex; gap: 10px;">
+                <button onclick="resetArcherParams()" class="secondary">Reset to Defaults</button>
+                <button onclick="closeArcherParams()" class="primary">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module" src="./main.ts"></script>
+</body>
+</html>

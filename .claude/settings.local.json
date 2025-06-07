@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(rm:*)",
+      "Bash(tree:*)",
+      "Bash(python3:*)",
+      "Bash(mv:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(chmod:*)",
+      "Bash(npm install)",
+      "Bash(npm run type-check:*)",
+      "Bash(npm run build:*)",
+      "Bash(# Move main entry point\nmv static/js/main.ts src/main.ts\n\n# Move type definitions\nmv static/js/types/index.ts src/types/index.ts\n\n# Move calculations\nmv static/js/calculations/geometry.ts src/calculations/geometry.ts\nmv static/js/calculations/archer.ts src/calculations/archer.ts\nmv static/js/calculations/exposure.ts src/calculations/exposure.ts\n\n# Move data files\nmv static/js/data/isotopes.ts src/data/isotopes.ts\nmv static/js/data/materials.ts src/data/materials.ts\n\n# Move UI components\nmv static/js/drawing.ts src/components/drawing.ts\nmv static/js/ui-controls.ts src/components/ui-controls.ts\nmv static/js/event-handlers.ts src/components/event-handlers.ts\n\n# Move utilities\nmv static/js/state.ts src/utils/state.ts\nmv static/js/constants.ts src/utils/constants.ts\n\n# Move client files (these seem to be components)\nmv static/js/heatmap-client.ts src/components/heatmap-client.ts\nmv static/js/calculations-client.ts src/components/calculations-client.ts)",
+      "Bash(true)"
+    ],
+    "deny": []
+  }
+}
