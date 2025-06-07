@@ -204,7 +204,7 @@ export function handleCanvasMouseDown(event: MouseEvent): void {
     }
 }
 
-export function handleCanvasMouseUp(event: MouseEvent): void {
+export function handleCanvasMouseUp(_event: MouseEvent): void {
     if (isPanning && appState.canvas) {
         isPanning = false;
         appState.canvas.style.cursor = 'crosshair';

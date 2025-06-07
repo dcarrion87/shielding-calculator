@@ -28,6 +28,13 @@ import {
     updateUseBuildup, 
     resetArcherParams 
 } from './components/archer-ui';
+
+// Declare global functions
+declare global {
+    interface Window {
+        closeValidationInfo: () => void;
+    }
+}
 import { archerParams } from './utils/archer-params';
 import { calculateCeilingFloor } from './components/ceiling-floor-calc';
 
