@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security Vulnerability
+    url: https://github.com/[username]/shielding-calculator/security/policy
+    about: Please report security vulnerabilities privately
+  - name: Radiation Safety Resources
+    url: https://www.nrc.gov/about-nrc/radiation.html
+    about: General radiation safety information from the NRC
+  - name: Health Physics Society
+    url: https://hps.org/
+    about: Professional organisation for radiation safety specialists
